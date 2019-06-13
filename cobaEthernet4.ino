@@ -102,18 +102,19 @@ void setup() {
 
 void loop()
 {
+  sensor();
  /*distance = ultrasonic.read();
   
  Serial.print("Distance in CM: ");
  Serial.println(distance);*/
  
-  myservo.write(0);
+  /*myservo.write(0);
 
   char buff[64];
   int len = 64;
 
   /* process incoming connections one at a time forever */
-  webserver.processConnection(buff, &len);
+  /*webserver.processConnection(buff, &len);
 
    if(digitalRead(led1) == LOW){
     ledStatus[1]="Off";
@@ -150,7 +151,8 @@ void loop()
  }
  else if(digitalRead(servo_pin) == HIGH){
   ledStatus[6]="On";
- }
+  //sensor();
+ }*/
   
 }
 
@@ -195,10 +197,10 @@ void switchReq(WebServer &server, WebServer::ConnectionType type, char *url_tail
             
             Serial.println(F("ON"));
             toggleOn(id);
-            if (id==6){
+            /*if (id==6){
               sensor();
               delay(1000);
-            }
+            }*/
           }
         }
       }
@@ -304,7 +306,7 @@ void servoOff(){
 }
 
 void statusSwitch(){
- webserver.println("Content-Type:application/json");
+ //webserver.println("Content-Type:application/json");
  webserver.println(prepareResponse());
 }
 String prepareResponse(){
@@ -326,13 +328,6 @@ String prepareResponse(){
 }
 
 void sensor(){
-  /*digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  distance1 = duration*0.034/2;*/
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -346,12 +341,12 @@ void sensor(){
   duration = pulseIn(echoPin, HIGH);
  
   // Calculating the distance
-  distance= (duration/2) * 0.03483;
+  distance= duration*0.034/2;
  
   safetyDistance = distance;
-  if (distance >= 200 || distance <= 0){
-    //myservo.write(0);
-    servoOff();
+  if (safetyDistance <= 5){
+    myservo.write(90);
+    servoOn();
     delay(1000);
     digitalWrite(servo_pin, HIGH);
     Serial.println("jarak jauh");
@@ -359,8 +354,8 @@ void sensor(){
   else{
     myservo.write(0);
     delay(1000);
-    servoOn();
-    digitalWrite(servo_pin, HIGH);
+    servoOff();
+    digitalWrite(servo_pin, LOW);
   }
   // Prints the distance on the Serial Monitor
   Serial.print("Distance: ");
