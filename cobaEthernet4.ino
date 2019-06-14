@@ -26,8 +26,7 @@ int led2 = 4;
 int led3 = 5;
 int led4 = 6;
 int led5 = 7;
-int led6 = 8;
-int servo_pin = 8;
+int servo_pin = 10;
 
 // Global Variables
 uint8_t released_position =   90;          
@@ -36,8 +35,8 @@ uint8_t arm_speed =           0;
 uint16_t pressed_time =       3000;
 
 // defines pins numbers
-const int trigPin = 50;
-const int echoPin = 52;
+const int trigPin = 8;
+const int echoPin = 9;
 
 // defines variables
 //Ultrasonic ultrasonic (9,10);
