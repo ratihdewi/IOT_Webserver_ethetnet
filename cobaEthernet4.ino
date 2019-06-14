@@ -10,7 +10,6 @@ static uint8_t mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 #include <SoftwareSerial.h>
 #include <Wire.h>
 #include <Sodaq_DS3231.h>
-#include <Ultrasonic.h>
 
 String newPasswordString;
 char newPassword[6];
@@ -46,7 +45,6 @@ int safetyDistance;
 
 WebServer webserver("", 80);
 
-Ultrasonic ultrasonic(trigPin, echoPin);
 //int distance;
 
 char bufferRequest[64];
@@ -95,7 +93,6 @@ void setup() {
   Serial.println(Ethernet.localIP());
 
   Wire.begin();
-  rtc.begin();
 
 }
 
