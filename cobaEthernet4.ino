@@ -36,8 +36,8 @@ uint8_t arm_speed =           0;
 uint16_t pressed_time =       3000;
 
 // defines pins numbers
-const int trigPin = 9;
-const int echoPin = 10;
+const int trigPin = 50;
+const int echoPin = 52;
 
 // defines variables
 //Ultrasonic ultrasonic (9,10);
@@ -108,13 +108,13 @@ void loop()
  Serial.print("Distance in CM: ");
  Serial.println(distance);*/
  
-  /*myservo.write(0);
+  myservo.write(0);
 
   char buff[64];
   int len = 64;
 
   /* process incoming connections one at a time forever */
-  /*webserver.processConnection(buff, &len);
+  webserver.processConnection(buff, &len);
 
    if(digitalRead(led1) == LOW){
     ledStatus[1]="Off";
@@ -152,7 +152,7 @@ void loop()
  else if(digitalRead(servo_pin) == HIGH){
   ledStatus[6]="On";
   //sensor();
- }*/
+ }
   
 }
 
@@ -197,10 +197,10 @@ void switchReq(WebServer &server, WebServer::ConnectionType type, char *url_tail
             
             Serial.println(F("ON"));
             toggleOn(id);
-            /*if (id==6){
+            if (id==6){
               sensor();
               delay(1000);
-            }*/
+            }
           }
         }
       }
@@ -328,36 +328,13 @@ String prepareResponse(){
 }
 
 void sensor(){
-  // Clears the trigPin
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
- 
-  // Sets the trigPin on HIGH state for 10 micro seconds
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
- 
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
- 
-  // Calculating the distance
-  distance= duration*0.034/2;
- 
-  safetyDistance = distance;
-  if (safetyDistance <= 5){
-    myservo.write(90);
-    servoOn();
-    delay(1000);
-    digitalWrite(servo_pin, HIGH);
-    Serial.println("jarak jauh");
-  } 
-  else{
-    myservo.write(0);
-    delay(1000);
-    servoOff();
-    digitalWrite(servo_pin, LOW);
-  }
-  // Prints the distance on the Serial Monitor
-  Serial.print("Distance: ");
-  Serial.println(distance); 
+  int duration, distance;
+ digitalWrite(trigPin, HIGH);
+ delayMicroseconds(1000);
+ digitalWrite(trigPin, LOW);
+ duration = pulseIn(echoPin, HIGH) / 2;
+ distance = duration / 29.1;
+ Serial.print(distance);
+ Serial.println(" cm");
+ delay(500);
 }
