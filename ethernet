@@ -124,14 +124,17 @@ void loop()
     //cm = duration / 58;
 
     if(cm <10){
-      myservo.attach(servo_pin);
-      servoOff();
-      myservo.write(0);
-      digitalWrite(servo_pin, LOW);
-      delay(100);
-
-      statusPintu = 0;
-    }
+  int jarak_aman_nutup_portal = 50;
+  while(1){     
+     if(hitung_jarak_cm() > jarak_aman_nutup_portal) break; 
+  }      
+  myservo.attach(servo_pin);
+  servoOff();
+  myservo.write(0);
+  digitalWrite(servo_pin, LOW);
+  delay(100);
+  statusPintu = 0;
+}
   
     return (cm);
   }
@@ -395,7 +398,16 @@ long microsecondsToCentimeters(long microseconds)
 {
   return microseconds / 29 / 2;
 }
-
+int hitung_jarak_cm(){
+     digitalWrite(trigPin, LOW);
+     delayMicroseconds(2);
+     digitalWrite(trigPin, HIGH);
+     delayMicroseconds(2); 
+     digitalWrite(trigPin, LOW); 
+     duration = pulseIn(echoPin, HIGH);
+     delay(100);
+     return microsecondsToCentimeters(duration);
+}
 /*void sensor(){
     distance = ultrasonic.Ranging(CM);
   
