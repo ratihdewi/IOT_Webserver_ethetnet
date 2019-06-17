@@ -10,13 +10,12 @@ static uint8_t mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 #include <SoftwareSerial.h>
 #include <Wire.h>
 #include <Sodaq_DS3231.h>
+//#include <Ultrasonic.h>
 
 String newPasswordString;
 char newPassword[6];
 
 Servo myservo;
-int buzzer = A0;
-int solenoid = A1;
 
 String ledStatus[7];
 
@@ -25,7 +24,8 @@ int led2 = 4;
 int led3 = 5;
 int led4 = 6;
 int led5 = 7;
-int servo_pin = 10;
+int led6 = 13;
+int servo_pin = 13;
 
 // Global Variables
 uint8_t released_position =   90;          
@@ -38,19 +38,22 @@ const int trigPin = 8;
 const int echoPin = 9;
 
 // defines variables
-//Ultrasonic ultrasonic (9,10);
+//Ultrasonic ultrasonic(trigPin, echoPin);
+
 long duration;
+long cm;
 int distance;
-int safetyDistance;
+
+bool statusPintu;
+//int safetyDistance;
 
 WebServer webserver("", 80);
 
-//int distance;
-
+long scanner(long cm);
 char bufferRequest[64];
 
 void setup() {
-  digitalWrite(solenoid, HIGH);
+  //digitalWrite(solenoid, HIGH);
   myservo.write(released_position);
   delay(1000);
   myservo.detach();
@@ -93,17 +96,38 @@ void setup() {
   Serial.println(Ethernet.localIP());
 
   Wire.begin();
+  rtc.begin();
 
 }
 
 void loop()
 {
-  sensor();
- /*distance = ultrasonic.read();
+  if(statusPintu){
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);  
+
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(2);  // Only 2uS NOT 10!
+    digitalWrite(trigPin, LOW); 
+    duration = pulseIn(echoPin, HIGH);
+    delay(100);
+
+    cm = microsecondsToCentimeters(duration);
+    Serial.print("cm: ");
+    Serial.println(cm);
+
+    if(cm > 10){
+      myservo.write(0);
+      digitalWrite(servo_pin, HIGH);
+      delay(100);
+      digitalWrite(servo_pin, LOW);
+    }
   
- Serial.print("Distance in CM: ");
- Serial.println(distance);*/
- 
+    return (cm);
+  }
+  //sensor();  
   myservo.write(0);
 
   char buff[64];
@@ -143,10 +167,12 @@ void loop()
     ledStatus[5]="On";
   }
  if(digitalRead(servo_pin) == LOW){
-  ledStatus[6]="off";  
+  ledStatus[6]="off"; 
+  statusPintu = false; 
  }
  else if(digitalRead(servo_pin) == HIGH){
   ledStatus[6]="On";
+  statusPintu = true;
   //sensor();
  }
   
@@ -166,13 +192,7 @@ void switchReq(WebServer &server, WebServer::ConnectionType type, char *url_tail
     rc = server.nextURLparam(&url_tail, name, 32, value, 32);
     if (rc != URLPARAM_EOS)
     {
-      if (strcmp(name, "id") == 0)
-      {
-        id = atoi(value);
-        Serial.print(F("id="));
-        Serial.println(id);
-      }
-
+      
       if(id !=-99)
       {
         if (strcmp(name, "action") == 0)
@@ -186,6 +206,9 @@ void switchReq(WebServer &server, WebServer::ConnectionType type, char *url_tail
   
             Serial.println(F("OFF"));
             toggleOff(id);
+            /*if(id==6){
+              statusPintu = false;
+            }*/
           }
           else if(strcmp(value, "1") == 0)
           {
@@ -193,13 +216,19 @@ void switchReq(WebServer &server, WebServer::ConnectionType type, char *url_tail
             
             Serial.println(F("ON"));
             toggleOn(id);
-            if (id==6){
-              sensor();
-              delay(1000);
-            }
+            /*if (id==6){
+              statusPintu = true;
+            }*/
           }
         }
       }
+      if (strcmp(name, "id") == 0)
+      {
+        id = atoi(value);
+        Serial.print(F("id="));
+        Serial.println(id);
+      }
+
       
     }
   }
@@ -230,6 +259,7 @@ void toggleOn (int id){
     delay(1000);
   }
   else if(id==6){
+    //statusPintu = true;
     myservo.write(90);
     servoOn();
     delay(1000);
@@ -261,7 +291,8 @@ void toggleOff (int id){
     delay(1000);
   }
   else if(id==6){
-    myservo.write(0);
+    //statusPintu = false;
+    //myservo.write(0);
     servoOff();
     delay(1000);
     digitalWrite(servo_pin, LOW);
@@ -324,13 +355,45 @@ String prepareResponse(){
 }
 
 void sensor(){
-  int duration, distance;
- digitalWrite(trigPin, HIGH);
- delayMicroseconds(1000);
- digitalWrite(trigPin, LOW);
- duration = pulseIn(echoPin, HIGH) / 2;
- distance = duration / 29.1;
- Serial.print(distance);
- Serial.println(" cm");
- delay(500);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);  
+
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(2);  // Only 2uS NOT 10!
+  digitalWrite(trigPin, LOW); 
+  duration = pulseIn(echoPin, HIGH);
+  delay(100);
+
+  cm = microsecondsToCentimeters(duration);
+  Serial.print("cm: ");
+  Serial.println(cm);
+
+  if(cm > 10){
+    myservo.write(0);
+    digitalWrite(servo_pin, HIGH);
+    delay(100);
+    digitalWrite(servo_pin, LOW);
+  }
+  
+  return (cm);
 }
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
+}
+
+/*void sensor(){
+    distance = ultrasonic.Ranging(CM);
+  
+ Serial.print("Distance in CM: ");
+ /*if(distance <=10){
+  myservo.write(0);
+    servoOff();
+    delay(1000);
+    digitalWrite(servo_pin, LOW);
+ }*/
+ /*Serial.println(distance);
+ delay(1000);
+}*/
