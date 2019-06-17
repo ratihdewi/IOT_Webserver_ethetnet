@@ -124,10 +124,11 @@ void loop()
     //cm = duration / 58;
 
     if(cm <10){
+      myservo.attach(servo_pin);
+      servoOff();
       myservo.write(0);
-      digitalWrite(servo_pin, HIGH);
-      delay(100);
       digitalWrite(servo_pin, LOW);
+      delay(100);
 
       statusPintu = 0;
     }
